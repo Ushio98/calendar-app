@@ -1,0 +1,397 @@
+@charset "utf-8";
+
+html, body, h1, h2, h3, p, a, ul, li {
+    padding: 0;
+    margin: 0;
+    line-height: 1.0;
+    font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+img {
+    vertical-align: bottom;
+}
+
+/* 全体 */
+.wrapper {
+    padding-left: 250px;
+}
+
+.content-wrapper {
+  padding: 60px 0;
+}
+
+.content {
+    padding: 30px 30px 0;
+}
+
+.content h2 {
+    margin-bottom: 20px;
+    font-size: 30px;
+    color: #333;
+}
+
+/* navigation */
+.left-navigation {
+  width: 250px; /* ナビゲーションの幅 */
+  background-color: #2c3e50; /* ダークな背景色 */
+  color: #ecf0f1; /* 明るいテキスト色 */
+  height: 100vh; /* 全画面の高さ */
+  position: fixed; /* 固定表示 */
+  top: 0;
+  left: 0;
+  padding-top: 40px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.sidebar-section {
+  flex-grow: 1;
+  overflow-y: auto; /* コンテンツが多い場合にスクロール可能にする */
+}
+
+.navigation-menu {
+  padding: 0 10px;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  margin-bottom: 5px;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.menu-link:hover,
+.menu-link.router-link-active {
+  background-color: #34495e; /* ホバー時とアクティブ時の背景色 */
+  color: #ffffff;
+}
+
+.icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.link-text {
+  font-size: 16px;
+}
+
+/* header */
+.main-header {
+  background-color: #ffffff; /* 明るい背景色 */
+  color: #333;
+  height: 60px; /* ヘッダーの高さ */
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 250px; /* 左ナビゲーションの幅に合わせて調整 */
+  right: 0;
+  z-index: 1000; /* 他の要素の上に表示 */
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.navbar-left .brand-link-header {
+  color: #333;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* 要素間のスペース */
+}
+
+.current-datetime {
+  font-size: 14px;
+  color: #555;
+}
+
+.username {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* カレンダー */
+.events-page-container {
+  padding: 20px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-event-button {
+  padding: 8px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.add-event-button:hover {
+  background-color: #45a049;
+}
+
+.calendar-container {
+  /* Add any specific styling for your calendar container if needed */
+}
+
+.custom-calendar {
+  /* VCalendar specific styling */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-calendar {
+  border-radius: 8px;
+  height: 100px;
+}
+
+.vc-pane-container {
+  height: 100%;
+}
+
+.vc-header .vc-title {
+  padding: 5px 15px !important;
+}
+
+.vc-title span {
+  font-size: 20px;
+}
+
+.custom-calendar .vc-weekday {
+  padding-bottom: 20px;
+}
+
+.custom-calendar .vc-weekday-1 {
+  color: red;
+}
+
+.custom-calendar .vc-weekday-7 {
+  color: #00c0ff;
+}
+
+.vc-weeks {
+    padding: 25px !important;
+}
+
+.vc-week {
+    height: 70px;
+}
+
+.vc-day {
+  min-height: 80px; /* 各日付セルの最小高さを確保 */
+  position: relative;
+}
+
+.vc-day-layer {
+  left: 1px;
+  right: auto;
+  top: 1px;
+  bottom: auto;
+  width: 30px;
+  height: 30px;
+}
+
+.day-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 5px;
+}
+
+.day-label {
+  font-size: 1.0em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.event-list {
+  flex-grow: 1;
+  overflow-y: auto; /* イベントが多い場合にスクロール可能にする */
+  font-size: 0.8em;
+}
+
+.event-item {
+  margin: 2px 0;
+  padding: 5px;
+  border-radius: 3px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.event-item:hover {
+  opacity: 0.7;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="color"] {
+  width: calc(100% - 12px);
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.form-group input[type="color"] {
+  height: 40px; /* Adjust height for color input */
+  padding: 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.modal-actions button:first-child {
+  background-color: #007bff;
+  color: white;
+  transition: 0.3s;
+}
+
+.modal-actions button:first-child:hover {
+  background-color: #0056b3;
+}
+
+.modal-actions button:last-child {
+  background-color: #6c757d;
+  color: white;
+  transition: 0.3s;
+}
+
+.modal-actions button:last-child:hover {
+  background-color: #5a6268;
+}
+
+.modal-actions button:last-child:hover {
+  background-color: #5a6268;
+}
+
+.event-details-group {
+  margin-bottom: 10px;
+}
+
+.event-details-group label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+/* footer */
+.main-footer {
+  background-color: #f8f9fa; /* 明るい背景色 */
+  padding: 15px 20px;
+  color: #495057;
+  border-top: 1px solid #dee2e6;
+  text-align: center;
+  position: fixed; /* フッターを固定 */
+  bottom: 0;
+  left: 250px; /* 左ナビゲーションの幅に合わせて調整 */
+  right: 0;
+  z-index: 999; /* ヘッダーよりは下、コンテンツよりは上 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.main-footer p {
+    width: 100%;
+    font-size: 10px;
+    text-align: center;
+}
