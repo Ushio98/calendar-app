@@ -30,7 +30,7 @@ img {
 }
 
 .content {
-    padding: 30px 30px 0;
+    padding: 40px 30px 0;
 }
 
 .content h2 {
@@ -103,10 +103,10 @@ img {
 .main-header {
   background-color: #ffffff; /* 明るい背景色 */
   color: #333;
-  height: 60px; /* ヘッダーの高さ */
+  height: 80px; /* ヘッダーの高さ */
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 30px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
@@ -125,7 +125,8 @@ img {
 .navbar-left .brand-link-header {
   color: #333;
   text-decoration: none;
-  font-size: 20px;
+  font-family: "Kaisei Opti", serif;
+  font-size: 40px;
   font-weight: bold;
 }
 
@@ -144,6 +145,136 @@ img {
   font-size: 16px;
   font-weight: bold;
   color: #333;
+}
+
+/* ダッシュボード */
+.dashboard-container {
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.schedules-and-tasks-container {
+  display: flex;
+  gap: 20px; /* セクション間のスペース */
+  margin-top: 20px;
+  align-items: flex-start;
+}
+
+.schedules-and-tasks-container > .today-schedules-section {
+  flex: 1; /* 利用可能なスペースを均等に分配 */
+  min-width: 0; /* Flexアイテムの最小幅をリセット */
+}
+
+.today-schedules-section {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.today-schedules-section h3 {
+  color: #333;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+.schedules-list {
+  display: grid;
+}
+
+.schedule-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-bottom: 10px;
+}
+
+.schedule-item:last-child {
+  margin-bottom: 0;
+}
+
+.schedule-title {
+  font-weight: bold;
+  color: #0056b3;
+  font-size: 1.1em;
+  margin-right: 10px;
+}
+
+.schedule-date {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.task-workload-highlight {
+  font-weight: bold;
+  color: #007bff; /* 青色で強調 */
+}
+
+.schedule-description {
+  font-size: 0.95em;
+  color: #444;
+  line-height: 1.5;
+}
+
+.no-schedules {
+  color: #777;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
+}
+
+/* カスタムチェックボックスのスタイル */
+.schedule-item input[type="checkbox"] {
+  /* デフォルトのチェックボックスを非表示 */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  vertical-align: middle;
+  position: relative;
+  margin-right: 8px;
+  outline: none;
+  transition: 0.1s;
+}
+
+.schedule-item input[type="checkbox"]:checked {
+  border-color: #007bff;
+  background-color: #007bff;
+}
+
+.schedule-item input[type="checkbox"]:checked::before {
+  content: '✔';
+  display: block;
+  color: white;
+  font-size: 18px;
+  line-height: 15px;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.schedule-item label {
+  vertical-align: middle;
+  cursor: pointer;
+  display: inline-block; /* チェックボックスとラベルを横並びにするため */
+}
+
+.schedule-item .schedule-title {
+  display: flex; /* チェックボックスとタイトルをFlexboxで配置 */
+  align-items: center;
 }
 
 /* カレンダー */
@@ -197,6 +328,15 @@ img {
   padding: 5px 15px !important;
 }
 
+/* .vc-header .vc-arrow {
+  background: rgb(26, 217, 255);
+  color: #fff !important;
+}
+
+.vc-header .vc-arrow:hover {
+  background: rgb(26, 217, 255) !important;
+} */
+
 .vc-title span {
   font-size: 20px;
 }
@@ -218,11 +358,11 @@ img {
 }
 
 .vc-week {
-    height: 70px;
+    height: 125px;
 }
 
 .vc-day {
-  min-height: 80px; /* 各日付セルの最小高さを確保 */
+  min-height: 80px !important;
   position: relative;
 }
 
@@ -312,17 +452,34 @@ img {
 
 .form-group input[type="text"],
 .form-group input[type="date"],
-.form-group input[type="color"] {
-  width: calc(100% - 12px);
+.form-group input[type="color"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1em;
 }
 
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="color"],
+.form-group textarea {
+  width: calc(100% - 12px);
+}
+
+#workloadUnit {
+  margin-left: 10px;
+}
+
 .form-group input[type="color"] {
   height: 40px; /* Adjust height for color input */
   padding: 0;
+}
+
+.form-group textarea {
+  height: 100px;
 }
 
 .modal-actions {
