@@ -5,7 +5,7 @@
       <div class="navbar-left">
         <!-- You can add a toggle button for the sidebar here if needed -->
         <a href="/" class="brand-link-header">
-          <span class="brand-text-header">Calendar App</span>
+          <span class="brand-text-header">Tsumugu（つむぐ）</span>
         </a>
       </div>
 
