@@ -1394,3 +1394,359 @@ textarea {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   ログイン・新規登録・パスワード再設定
+   ========================================================================== */
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 48px 16px;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(47, 79, 111, 0.08) 0, transparent 38%),
+    radial-gradient(circle at 88% 92%, rgba(211, 154, 44, 0.1) 0, transparent 40%);
+}
+
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-brand .app-nav__logo {
+  background-color: var(--color-nav-bg);
+  color: var(--color-bg);
+}
+
+.auth-brand__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.auth-brand__name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.auth-brand__kana {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--color-text-muted);
+}
+
+.auth-card {
+  width: 100%;
+  padding: 32px 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-card__title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.auth-card__lead {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.auth-card > .alert,
+.auth-card > .auth-form,
+.auth-card > .btn--google,
+.auth-card > .auth-done {
+  margin-top: 22px;
+}
+
+.auth-card > .divider + .btn--google {
+  margin-top: 0;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-footer {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.auth-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.auth-done__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.auth-done__title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.auth-done__text {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+.auth-done__hint {
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.field__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn--block {
+  width: 100%;
+  min-height: 46px;
+  font-size: 15px;
+}
+
+.btn--google {
+  width: 100%;
+  min-height: 46px;
+  gap: 10px;
+  background-color: #fff;
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.btn--google:hover {
+  background-color: var(--color-surface-muted);
+}
+
+.spinner--dark {
+  border-color: rgba(47, 42, 37, 0.2);
+  border-top-color: var(--color-text);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.text-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(47, 79, 111, 0.3);
+  text-underline-offset: 3px;
+}
+
+.text-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.text-link--small {
+  font-size: 12px;
+}
+
+.text-link--with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.alert .app-icon {
+  margin-top: 2px;
+}
+
+.alert--error {
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.alert--info {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input .input {
+  padding-right: 46px;
+}
+
+.password-input__toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-input__toggle:hover {
+  color: var(--color-text);
+  background-color: var(--color-surface-muted);
+}
+
+/* サイドナビのユーザー欄 */
+.app-nav__user {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(246, 241, 231, 0.12);
+}
+
+.app-nav__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 8px;
+}
+
+.app-nav__profile-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.app-nav__user-name,
+.app-nav__user-email {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-nav__user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-nav-active);
+}
+
+.app-nav__user-email {
+  font-size: 11px;
+  color: var(--color-nav-text);
+  opacity: 0.8;
+}
+
+.app-nav__logout {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--color-nav-text);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar--initial {
+  display: grid;
+  place-items: center;
+  background-color: #d39a2c;
+  color: var(--color-nav-bg);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: 28px 16px;
+  }
+
+  .auth-card {
+    padding: 26px 20px;
+  }
+}

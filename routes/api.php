@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/schedules/today', [ScheduleController::class, 'today']);
-Route::put('/schedules/{schedule}/check', [ScheduleController::class, 'check']);
-Route::apiResource('schedules', ScheduleController::class);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/schedules/today', [ScheduleController::class, 'today']);
+    Route::put('/schedules/{schedule}/check', [ScheduleController::class, 'check']);
+    Route::apiResource('schedules', ScheduleController::class);
+});

@@ -10,19 +10,20 @@ class ScheduleController extends Controller
     /**
      * Display a listing of the schedules.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Schedule::orderBy('start_date')->get();
+        return $request->user()->schedules()->orderBy('start_date')->get();
     }
 
     /**
      * Display the schedules that include today.
      */
-    public function today()
+    public function today(Request $request)
     {
         $today = now()->toDateString();
 
-        return Schedule::whereDate('start_date', '<=', $today)
+        return $request->user()->schedules()
+            ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->withExists(['checks as is_checked' => fn ($query) => $query->whereDate('date', $today)])
             ->orderBy('start_date')
@@ -34,6 +35,8 @@ class ScheduleController extends Controller
      */
     public function check(Request $request, Schedule $schedule)
     {
+        $this->ensureOwner($request, $schedule);
+
         $checked = $request->validate(['checked' => ['required', 'boolean']])['checked'];
         $today = now()->toDateString();
 
@@ -51,7 +54,7 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        $schedule = Schedule::create($this->validated($request));
+        $schedule = $request->user()->schedules()->create($this->validated($request));
 
         return response()->json($schedule, 201);
     }
@@ -59,8 +62,10 @@ class ScheduleController extends Controller
     /**
      * Display the specified schedule.
      */
-    public function show(Schedule $schedule)
+    public function show(Request $request, Schedule $schedule)
     {
+        $this->ensureOwner($request, $schedule);
+
         return $schedule;
     }
 
@@ -69,6 +74,8 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, Schedule $schedule)
     {
+        $this->ensureOwner($request, $schedule);
+
         $schedule->update($this->validated($request));
 
         return $schedule;
@@ -77,11 +84,21 @@ class ScheduleController extends Controller
     /**
      * Remove the specified schedule.
      */
-    public function destroy(Schedule $schedule)
+    public function destroy(Request $request, Schedule $schedule)
     {
+        $this->ensureOwner($request, $schedule);
+
         $schedule->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Respond with 404 when the schedule belongs to another user, so its existence is not revealed.
+     */
+    private function ensureOwner(Request $request, Schedule $schedule): void
+    {
+        abort_unless($schedule->user_id === $request->user()->id, 404);
     }
 
     /**
