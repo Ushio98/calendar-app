@@ -3,13 +3,18 @@
 // このアプリで使っているルールの日本語メッセージ。
 // ここにないルールは英語（フレームワーク標準）で表示される
 return [
+    'array' => ':attributeの形式が正しくありません。',
     'after_or_equal' => ':attributeは:date以降の日付にしてください。',
     'boolean' => ':attributeの値が正しくありません。',
     'confirmed' => ':attributeが確認用と一致しません。',
     'date' => ':attributeは正しい日付を入力してください。',
+    'date_format' => ':attributeは:format形式で入力してください。',
+    'distinct' => ':attributeが重複しています。',
     'email' => ':attributeは正しいメールアドレスの形式で入力してください。',
+    'in' => ':attributeの値が正しくありません。',
     'integer' => ':attributeは整数で入力してください。',
     'max' => [
+        'array' => ':attributeは:max件以下にしてください。',
         'numeric' => ':attributeは:max以下で入力してください。',
         'string' => ':attributeは:max文字以内で入力してください。',
     ],
@@ -42,5 +47,9 @@ return [
         'end_date' => '終了日',
         'location' => '場所',
         'checked' => 'チェック状態',
+        'workload_mode' => '作業量の設定方法',
+        'daily_workloads' => '日ごとの作業量',
+        'daily_workloads.*.date' => '作業日',
+        'daily_workloads.*.value' => '日ごとの作業量',
     ],
 ];
