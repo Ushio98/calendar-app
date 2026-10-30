@@ -83,6 +83,7 @@
 <script>
 import AppIcon from './ui/AppIcon.vue';
 import { toast } from '../ui/toast';
+import { authState } from '../ui/auth';
 import { DEFAULT_EVENT_COLOR, formatDateLong, formatPeriod, formatWorkload } from '../ui/schedule';
 
 export default {
@@ -102,10 +103,10 @@ export default {
     },
     greeting() {
       const hour = new Date().getHours();
-      if (hour < 5) return 'こんばんは';
-      if (hour < 11) return 'おはようございます';
-      if (hour < 18) return 'こんにちは';
-      return 'こんばんは';
+      let greeting = 'こんばんは';
+      if (hour >= 5 && hour < 11) greeting = 'おはようございます';
+      else if (hour >= 11 && hour < 18) greeting = 'こんにちは';
+      return authState.user ? `${greeting}、${authState.user.name}さん` : greeting;
     },
     tasks() {
       return this.schedules.filter(s => s.workload_value !== null && s.workload_value !== undefined);
