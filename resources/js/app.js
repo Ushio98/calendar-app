@@ -11,15 +11,19 @@ import Settings from './components/Settings.vue';   // 仮のコンポーネン�
 
 // ルートの定義
 const routes = [
-  { path: '/', component: Dashboard },
-  { path: '/events', component: Events },
-  { path: '/settings', component: Settings },
+  { path: '/', component: Dashboard, meta: { title: 'ダッシュボード' } },
+  { path: '/events', component: Events, meta: { title: 'カレンダー' } },
+  { path: '/settings', component: Settings, meta: { title: '設定' } },
 ];
 
 // ルーターの作成
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.afterEach(to => {
+  document.title = to.meta.title ? `${to.meta.title} | Tsumugu（つむぐ）` : 'Tsumugu（つむぐ）';
 });
 
 const app = createApp(App);

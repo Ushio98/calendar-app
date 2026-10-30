@@ -1,6 +1,6 @@
 <template>
-  <footer class="main-footer">
-    <p>Copyright &copy; {{ formattedDateTime }} Calendar App.</p>
+  <footer class="app-footer">
+    <p>&copy; {{ year }} Tsumugu</p>
   </footer>
 </template>
 
@@ -8,17 +8,7 @@
 export default {
   name: 'Footer',
   data() {
-    return {
-      currentDateTime: new Date(),
-    };
-  },
-  computed: {
-    formattedDateTime() {
-      const options = {
-        year: 'numeric',
-      };
-      return this.currentDateTime.toLocaleDateString('en-US', options);
-    },
+    return { year: new Date().getFullYear() };
   },
 };
 </script>
