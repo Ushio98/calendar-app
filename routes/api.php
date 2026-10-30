@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/schedules/today', [ScheduleController::class, 'today']);
+Route::put('/schedules/{schedule}/check', [ScheduleController::class, 'check']);
+Route::apiResource('schedules', ScheduleController::class);

@@ -1,54 +1,50 @@
 <template>
-  <header class="main-header">
-    <nav class="navbar">
-      <!-- Left side of header (e.g., brand or toggle button) -->
-      <div class="navbar-left">
-        <!-- You can add a toggle button for the sidebar here if needed -->
-        <a href="/" class="brand-link-header">
-          <span class="brand-text-header">Tsumugu（つむぐ）</span>
-        </a>
-      </div>
-
-      <!-- Right side of header -->
-      <div class="navbar-right">
-        <span class="current-datetime">{{ formattedDateTime }}</span>
-        <span class="username">{{ currentUser }}</span>
-      </div>
-    </nav>
+  <header class="app-header">
+    <button type="button" class="icon-button app-header__menu" aria-label="メニューを開く" @click="$emit('toggle-nav')">
+      <AppIcon name="menu" />
+    </button>
+    <h1 class="app-header__title">{{ pageTitle }}</h1>
+    <div class="app-header__clock">
+      <span class="app-header__date">{{ dateLabel }}</span>
+      <time class="app-header__time">{{ timeLabel }}</time>
+    </div>
   </header>
 </template>
 
 <script>
+import AppIcon from './ui/AppIcon.vue';
+import { formatDateLong } from '../ui/schedule';
+
 export default {
   name: 'Header',
+  components: { AppIcon },
+  emits: ['toggle-nav'],
   data() {
-    return {
-      currentDateTime: new Date(),
-      currentUser: 'ログインユーザー', // 実際のユーザー名に置き換える
-    };
+    return { now: new Date() };
   },
   computed: {
-    formattedDateTime() {
-      const options = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      };
-      return this.currentDateTime.toLocaleDateString('ja-JP', options);
+    pageTitle() {
+      return this.$route.meta.title || '';
+    },
+    dateLabel() {
+      return formatDateLong(this.now);
+    },
+    timeLabel() {
+      const h = String(this.now.getHours()).padStart(2, '0');
+      const m = String(this.now.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
     },
   },
   mounted() {
-    // 1秒ごとに現在日時を更新
-    this.timer = setInterval(() => {
-      this.currentDateTime = new Date();
-    }, 1000);
+    // 表示は分単位なので、秒が変わるたびではなく分の切り替わりで更新する
+    const tick = () => {
+      this.now = new Date();
+      this.timer = setTimeout(tick, 60000 - (this.now.getSeconds() * 1000 + this.now.getMilliseconds()));
+    };
+    tick();
   },
   beforeUnmount() {
-    // コンポーネントが破棄される前にタイマーをクリア
-    clearInterval(this.timer);
+    clearTimeout(this.timer);
   },
 };
 </script>
