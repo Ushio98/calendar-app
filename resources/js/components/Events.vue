@@ -99,9 +99,21 @@
           <dt><AppIcon name="calendar" :size="18" /><span class="visually-hidden">期間</span></dt>
           <dd>{{ formatPeriod(selected.start_date, selected.end_date) }}</dd>
         </div>
-        <div v-if="formatWorkload(selected.workload_value, selected.workload_unit)" class="detail-list__row">
+        <div v-if="workloadSummary(selected)" class="detail-list__row">
           <dt><AppIcon name="layers" :size="18" /><span class="visually-hidden">作業量</span></dt>
-          <dd>{{ formatWorkload(selected.workload_value, selected.workload_unit) }}</dd>
+          <dd>
+            {{ workloadSummary(selected) }}
+            <ul v-if="selected.workload_mode === 'daily'" class="workload-breakdown">
+              <li
+                v-for="date in datesBetween(selected.start_date, selected.end_date)"
+                :key="date"
+                :class="{ 'is-today': date === todayYmd, 'is-empty': selected.daily_workloads[date] === undefined }"
+              >
+                <span>{{ formatDateShort(parseYmd(date)) }}</span>
+                <span>{{ selected.daily_workloads[date] === undefined ? '—' : formatWorkload(selected.daily_workloads[date], selected.workload_unit) }}</span>
+              </li>
+            </ul>
+          </dd>
         </div>
         <div v-if="selected.memo" class="detail-list__row">
           <dt><AppIcon name="note" :size="18" /><span class="visually-hidden">メモ</span></dt>
@@ -130,12 +142,15 @@ import { toast } from '../ui/toast';
 import { confirmDialog } from '../ui/confirm';
 import {
   addDays,
+  datesBetween,
   DEFAULT_EVENT_COLOR,
+  formatDateShort,
   formatPeriod,
   formatWorkload,
   parseYmd,
   readableTextColor,
   toYmd,
+  workloadSummary,
 } from '../ui/schedule';
 
 export default {
@@ -152,6 +167,7 @@ export default {
       loading: false,
       selected: null,
       hoveredId: null,
+      todayYmd: toYmd(new Date()),
       formOpen: false,
       formKey: 0,
       formInitial: {},
@@ -230,8 +246,12 @@ export default {
     this.fetchSchedules();
   },
   methods: {
+    datesBetween,
+    formatDateShort,
     formatPeriod,
     formatWorkload,
+    parseYmd,
+    workloadSummary,
     chipStyle(color) {
       const background = color || DEFAULT_EVENT_COLOR;
       return { backgroundColor: background, color: readableTextColor(background) };
@@ -268,8 +288,10 @@ export default {
         startDate: schedule.start_date,
         endDate: schedule.end_date,
         color: schedule.color || DEFAULT_EVENT_COLOR,
+        workloadMode: schedule.workload_mode || 'none',
         workloadValue: schedule.workload_value,
         workloadUnit: schedule.workload_unit || '',
+        dailyValues: { ...(schedule.daily_workloads || {}) },
         memo: schedule.memo || '',
       };
       this.selected = null;

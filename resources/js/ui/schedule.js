@@ -85,3 +85,47 @@ export function readableTextColor(hex) {
   const luminance = 0.2126 * channel(n >> 16) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
   return luminance > 0.23 ? '#2f2a25' : '#ffffff';
 }
+
+// 作業量の設定方法
+export const WORKLOAD_MODES = [
+  { value: 'none', label: 'なし' },
+  { value: 'fixed', label: '毎日同じ' },
+  { value: 'daily', label: '日ごとに設定' },
+];
+
+// 開始日〜終了日の 'YYYY-MM-DD' の一覧
+export function datesBetween(startYmd, endYmd) {
+  const start = parseYmd(startYmd);
+  const end = parseYmd(endYmd || startYmd);
+  if (!start || !end || end < start) return [];
+  const dates = [];
+  for (const day = new Date(start); day <= end; day.setDate(day.getDate() + 1)) {
+    dates.push(toYmd(day));
+  }
+  return dates;
+}
+
+// 予定全体の作業量の合計
+export function totalWorkload(schedule) {
+  if (schedule.workload_mode === 'fixed') {
+    return (schedule.workload_value || 0) * datesBetween(schedule.start_date, schedule.end_date).length;
+  }
+  if (schedule.workload_mode === 'daily') {
+    return Object.values(schedule.daily_workloads || {}).reduce((sum, value) => sum + value, 0);
+  }
+  return 0;
+}
+
+// 詳細画面などに出す作業量の説明
+export function workloadSummary(schedule) {
+  const unit = formatWorkloadUnit(schedule.workload_unit);
+  const days = datesBetween(schedule.start_date, schedule.end_date).length;
+  if (schedule.workload_mode === 'fixed') {
+    const perDay = formatWorkload(schedule.workload_value, schedule.workload_unit);
+    return days > 1 ? `毎日 ${perDay}（合計 ${totalWorkload(schedule)}${unit}）` : perDay;
+  }
+  if (schedule.workload_mode === 'daily') {
+    return `日ごとに設定（合計 ${totalWorkload(schedule)}${unit}）`;
+  }
+  return '';
+}

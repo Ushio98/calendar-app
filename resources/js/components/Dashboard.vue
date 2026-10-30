@@ -67,7 +67,10 @@
               />
               <span class="task__box"><AppIcon name="check" :size="14" /></span>
               <span class="task__title">{{ task.title }}</span>
-              <span class="task__workload">{{ formatWorkload(task.workload_value, task.workload_unit) }}</span>
+              <span class="task__workload">
+                {{ formatWorkload(task.today_workload, task.workload_unit) }}
+                <small v-if="task.workload_mode === 'daily'">今日の分</small>
+              </span>
             </label>
           </li>
         </ul>
@@ -109,7 +112,8 @@ export default {
       return authState.user ? `${greeting}、${authState.user.name}さん` : greeting;
     },
     tasks() {
-      return this.schedules.filter(s => s.workload_value !== null && s.workload_value !== undefined);
+      // 「日ごとに設定」で今日の作業量が空欄の予定は、今日は作業なし
+      return this.schedules.filter(s => s.today_workload !== null && s.today_workload !== undefined);
     },
     doneCount() {
       return this.tasks.filter(t => t.is_checked).length;

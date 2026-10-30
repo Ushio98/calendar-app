@@ -1750,3 +1750,160 @@ textarea {
     padding: 26px 20px;
   }
 }
+
+/* ==========================================================================
+   作業量の設定（なし／毎日同じ／日ごとに設定）
+   ========================================================================== */
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background-color: var(--color-surface-muted);
+}
+
+.segmented__option span {
+  display: block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.segmented__option span:hover {
+  color: var(--color-text);
+}
+
+.segmented__option input:checked + span {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--color-border);
+}
+
+.segmented__option input:focus-visible + span {
+  box-shadow: var(--focus-ring);
+}
+
+.input--compact {
+  width: 88px;
+  min-height: 36px;
+  padding: 4px 8px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-toolbar {
+  justify-content: space-between;
+}
+
+.daily-toolbar__bulk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.daily-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 264px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: #fff;
+}
+
+.daily-list.is-invalid {
+  border-color: var(--color-danger);
+}
+
+.daily-list__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+}
+
+.daily-list__row + .daily-list__row {
+  border-top: 1px solid var(--color-border);
+}
+
+.daily-list__date {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-list__row.is-sunday .daily-list__date {
+  color: var(--color-sunday);
+}
+
+.daily-list__row.is-saturday .daily-list__date {
+  color: var(--color-saturday);
+}
+
+.daily-list__unit {
+  width: 3.5em;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.daily-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.daily-total strong {
+  margin: 0 2px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-total__days {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.workload-breakdown {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font-size: 13px;
+}
+
+.workload-breakdown li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.workload-breakdown li.is-empty {
+  color: var(--color-text-subtle);
+}
+
+.workload-breakdown li.is-today {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.task__workload small {
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+}
