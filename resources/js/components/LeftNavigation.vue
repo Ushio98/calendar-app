@@ -53,6 +53,7 @@ export default {
       items: [
         { to: '/', label: 'ダッシュボード', icon: 'home' },
         { to: '/events', label: 'カレンダー', icon: 'calendar' },
+        { to: '/projects', label: 'プロジェクト', icon: 'folder' },
       ],
     };
   },

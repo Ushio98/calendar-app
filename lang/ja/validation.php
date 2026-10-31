@@ -11,6 +11,7 @@ return [
     'date_format' => ':attributeは:format形式で入力してください。',
     'distinct' => ':attributeが重複しています。',
     'email' => ':attributeは正しいメールアドレスの形式で入力してください。',
+    'exists' => '選択された:attributeは見つかりません。',
     'in' => ':attributeの値が正しくありません。',
     'integer' => ':attributeは整数で入力してください。',
     'max' => [
@@ -30,6 +31,7 @@ return [
         'uncompromised' => 'この:attributeは過去に流出したことがあるため使えません。別の:attributeにしてください。',
     ],
     'required' => ':attributeを入力してください。',
+    'required_with' => ':attributeを選択してください。',
     'string' => ':attributeは文字列で入力してください。',
     'unique' => 'この:attributeはすでに使われています。',
 
@@ -47,6 +49,7 @@ return [
         'end_date' => '終了日',
         'location' => '場所',
         'checked' => 'チェック状態',
+        'project_id' => 'プロジェクト',
         'workload_mode' => '作業量の設定方法',
         'daily_workloads' => '日ごとの作業量',
         'daily_workloads.*.date' => '作業日',

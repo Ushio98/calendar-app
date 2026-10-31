@@ -8,6 +8,7 @@ import 'v-calendar/style.css'; // v-calendarのスタイルをインポート
 // コンポーネントのインポート
 import Dashboard from './components/Dashboard.vue';
 import Events from './components/Events.vue';
+import Projects from './components/Projects.vue';
 import Settings from './components/Settings.vue';
 import LoginPage from './components/auth/LoginPage.vue';
 import RegisterPage from './components/auth/RegisterPage.vue';
@@ -22,6 +23,7 @@ import { toast } from './ui/toast';
 const routes = [
   { path: '/', component: Dashboard, meta: { title: 'ダッシュボード' } },
   { path: '/events', component: Events, meta: { title: 'カレンダー' } },
+  { path: '/projects', component: Projects, meta: { title: 'プロジェクト' } },
   { path: '/settings', component: Settings, meta: { title: '設定' } },
   { path: '/login', component: LoginPage, meta: { title: 'ログイン', guest: true } },
   { path: '/register', component: RegisterPage, meta: { title: '新規登録', guest: true } },

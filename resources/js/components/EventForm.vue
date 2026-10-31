@@ -18,6 +18,27 @@
     </div>
 
     <div class="field">
+      <label class="field__label" :for="`${idPrefix}-project`">
+        プロジェクト <span class="field__optional">任意</span>
+      </label>
+      <div class="field__row field__row--project">
+        <select
+          :id="`${idPrefix}-project`"
+          v-model="form.projectId"
+          class="input"
+          :class="{ 'is-invalid': errorFor('project_id') }"
+        >
+          <option :value="null">なし</option>
+          <option v-for="project in projects" :key="project.id" :value="project.id">{{ project.name }}</option>
+        </select>
+        <button type="button" class="btn btn--soft btn--sm" @click="projectFormOpen = true">
+          <AppIcon name="plus" :size="16" />新規作成
+        </button>
+      </div>
+      <p v-if="errorFor('project_id')" class="field__error">{{ errorFor('project_id') }}</p>
+    </div>
+
+    <div class="field">
       <span class="field__label">
         期間 <span class="field__required">必須</span>
       </span>
@@ -189,11 +210,14 @@
         {{ submitting ? '保存中…' : submitLabel }}
       </button>
     </div>
+
+    <ProjectFormModal :open="projectFormOpen" @close="projectFormOpen = false" @saved="onProjectCreated" />
   </form>
 </template>
 
 <script>
 import AppIcon from './ui/AppIcon.vue';
+import ProjectFormModal from './ProjectFormModal.vue';
 import {
   DEFAULT_EVENT_COLOR,
   EVENT_COLORS,
@@ -212,16 +236,17 @@ let uid = 0;
 
 export default {
   name: 'EventForm',
-  components: { AppIcon },
+  components: { AppIcon, ProjectFormModal },
   props: {
-    // { title, startDate, endDate, color, workloadMode, workloadValue, workloadUnit, dailyValues, memo }
+    projects: { type: Array, default: () => [] },
+    // { title, projectId, startDate, endDate, color, workloadMode, workloadValue, workloadUnit, dailyValues, memo }
     initial: { type: Object, default: () => ({}) },
     submitting: { type: Boolean, default: false },
     // サーバーから返ったバリデーションエラー（422）
     serverErrors: { type: Object, default: () => ({}) },
     submitLabel: { type: String, default: '保存する' },
   },
-  emits: ['submit', 'cancel'],
+  emits: ['submit', 'cancel', 'project-created'],
   data() {
     return {
       idPrefix: `event-form-${++uid}`,
@@ -230,8 +255,10 @@ export default {
       modes: WORKLOAD_MODES,
       clientErrors: {},
       bulkValue: null,
+      projectFormOpen: false,
       form: {
         title: '',
+        projectId: null,
         startDate: '',
         endDate: '',
         color: DEFAULT_EVENT_COLOR,
@@ -261,6 +288,11 @@ export default {
     },
   },
   methods: {
+    onProjectCreated(project) {
+      this.$emit('project-created', project);
+      this.form.projectId = project.id;
+      this.projectFormOpen = false;
+    },
     isFilled(value) {
       return value !== null && value !== undefined && value !== '';
     },
@@ -324,6 +356,7 @@ export default {
       const mode = this.form.workloadMode;
       this.$emit('submit', {
         title: this.form.title,
+        project_id: this.form.projectId,
         color: this.form.color,
         memo: this.form.memo || null,
         workload_mode: mode,

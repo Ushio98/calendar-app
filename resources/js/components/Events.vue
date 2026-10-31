@@ -39,7 +39,20 @@
             <ul class="day-cell__events">
               <li v-for="(segment, lane) in layout[day.id] || []" :key="segment ? segment.schedule.id : `spacer-${lane}`">
                 <button
-                  v-if="segment"
+                  v-if="segment && segment.schedule.project"
+                  type="button"
+                  class="event-chip milestone-chip"
+                  :title="`${milestoneLabel(segment.schedule.project.milestone_type)}：${segment.schedule.title}`"
+                  :aria-label="`${milestoneLabel(segment.schedule.project.milestone_type)}：${segment.schedule.title}`"
+                  @click.stop="selectedProject = segment.schedule.project"
+                >
+                  <span class="event-chip__label">
+                    <AppIcon name="flag" :size="11" class="milestone-chip__icon" />{{ segment.schedule.title }}
+                    <small>{{ milestoneLabel(segment.schedule.project.milestone_type) }}</small>
+                  </span>
+                </button>
+                <button
+                  v-else-if="segment"
                   type="button"
                   class="event-chip"
                   :class="{
@@ -81,7 +94,9 @@
         :initial="formInitial"
         :submitting="submitting"
         :server-errors="serverErrors"
+        :projects="projects"
         :submit-label="editingId ? '変更を保存' : '追加する'"
+        @project-created="onProjectCreated"
         @submit="saveSchedule"
         @cancel="closeForm"
       />
@@ -98,6 +113,10 @@
         <div class="detail-list__row">
           <dt><AppIcon name="calendar" :size="18" /><span class="visually-hidden">期間</span></dt>
           <dd>{{ formatPeriod(selected.start_date, selected.end_date) }}</dd>
+        </div>
+        <div v-if="projectOf(selected)" class="detail-list__row">
+          <dt><AppIcon name="folder" :size="18" /><span class="visually-hidden">プロジェクト</span></dt>
+          <dd>{{ projectOf(selected).name }}</dd>
         </div>
         <div v-if="workloadSummary(selected)" class="detail-list__row">
           <dt><AppIcon name="layers" :size="18" /><span class="visually-hidden">作業量</span></dt>
@@ -129,6 +148,21 @@
         </button>
       </template>
     </BaseModal>
+
+    <!-- プロジェクトの日付 -->
+    <BaseModal :open="!!selectedProject" :title="selectedProject ? selectedProject.name : ''" size="sm" @close="selectedProject = null">
+      <p v-if="selectedProject" class="project-milestone" :class="{ 'is-past': isMilestonePast(selectedProject.milestone_date) }">
+        <AppIcon name="flag" :size="16" />
+        <span class="project-milestone__type">{{ milestoneLabel(selectedProject.milestone_type) }}</span>
+        <span>{{ formatDateLong(parseYmd(selectedProject.milestone_date)) }}</span>
+        <span class="project-milestone__countdown">{{ milestoneCountdown(selectedProject.milestone_date) }}</span>
+      </p>
+      <template #footer>
+        <router-link to="/projects" class="btn btn--primary">
+          <AppIcon name="folder" :size="18" />プロジェクトを開く
+        </router-link>
+      </template>
+    </BaseModal>
   </section>
 </template>
 
@@ -140,10 +174,12 @@ import BaseModal from './ui/BaseModal.vue';
 import EventForm from './EventForm.vue';
 import { toast } from '../ui/toast';
 import { confirmDialog } from '../ui/confirm';
+import { isMilestonePast, milestoneCountdown, milestoneLabel } from '../ui/project';
 import {
   addDays,
   datesBetween,
   DEFAULT_EVENT_COLOR,
+  formatDateLong,
   formatDateShort,
   formatPeriod,
   formatWorkload,
@@ -164,8 +200,10 @@ export default {
   data() {
     return {
       schedules: [],
+      projects: [],
       loading: false,
       selected: null,
+      selectedProject: null,
       hoveredId: null,
       todayYmd: toYmd(new Date()),
       formOpen: false,
@@ -184,12 +222,23 @@ export default {
       const byDay = {};
       const weekLanes = {}; // 週の月曜日 -> 段ごとの最終使用日
 
-      const sorted = [...this.schedules].sort((a, b) => {
+      // プロジェクトの日付も、1日だけの予定と同じように段を割り当てる
+      const milestones = this.projects
+        .filter(project => project.milestone_date)
+        .map(project => ({
+          id: `project-${project.id}`,
+          title: project.name,
+          start_date: project.milestone_date,
+          end_date: project.milestone_date,
+          project,
+        }));
+
+      const sorted = [...milestones, ...this.schedules].sort((a, b) => {
         const endA = a.end_date || a.start_date;
         const endB = b.end_date || b.start_date;
         return a.start_date.localeCompare(b.start_date) // 開始が早い順
           || endB.localeCompare(endA) // 同じ開始日なら長い予定を上に
-          || a.id - b.id;
+          || Number(!!b.project) - Number(!!a.project); // 同じ条件ならプロジェクトの日付を上に
       });
 
       sorted.forEach(schedule => {
@@ -244,12 +293,17 @@ export default {
   },
   mounted() {
     this.fetchSchedules();
+    this.fetchProjects();
   },
   methods: {
     datesBetween,
+    formatDateLong,
     formatDateShort,
     formatPeriod,
     formatWorkload,
+    isMilestonePast,
+    milestoneCountdown,
+    milestoneLabel,
     parseYmd,
     workloadSummary,
     chipStyle(color) {
@@ -258,6 +312,22 @@ export default {
     },
     goToday() {
       this.$refs.calendar.move(new Date());
+    },
+    async fetchProjects() {
+      try {
+        const response = await axios.get('/api/projects');
+        this.projects = response.data;
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        toast('プロジェクトの読み込みに失敗しました。', 'error');
+      }
+    },
+    projectOf(schedule) {
+      return this.projects.find(project => project.id === schedule.project_id) || null;
+    },
+    onProjectCreated(project) {
+      this.projects.push(project);
+      this.projects.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
     },
     async fetchSchedules() {
       this.loading = true;
@@ -288,6 +358,7 @@ export default {
         startDate: schedule.start_date,
         endDate: schedule.end_date,
         color: schedule.color || DEFAULT_EVENT_COLOR,
+        projectId: schedule.project_id,
         workloadMode: schedule.workload_mode || 'none',
         workloadValue: schedule.workload_value,
         workloadUnit: schedule.workload_unit || '',

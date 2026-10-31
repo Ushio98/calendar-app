@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,4 +24,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/schedules/today', [ScheduleController::class, 'today']);
     Route::put('/schedules/{schedule}/check', [ScheduleController::class, 'check']);
     Route::apiResource('schedules', ScheduleController::class);
+    Route::apiResource('projects', ProjectController::class);
 });
