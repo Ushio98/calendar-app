@@ -58,6 +58,11 @@ class User extends Authenticatable
         });
     }
 
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);

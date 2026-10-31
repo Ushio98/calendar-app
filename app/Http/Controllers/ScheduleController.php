@@ -26,7 +26,7 @@ class ScheduleController extends Controller
         $today = now()->toDateString();
 
         return $request->user()->schedules()
-            ->with('workloads')
+            ->with(['workloads', 'project:id,name'])
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->withExists(['checks as is_checked' => fn ($query) => $query->whereDate('date', $today)])
@@ -131,6 +131,8 @@ class ScheduleController extends Controller
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
+            // 自分のプロジェクトだけを指定できる
+            'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->where('user_id', $request->user()->id)],
             'color' => ['nullable', 'string', 'max:20'],
             'memo' => ['nullable', 'string'],
             'workload_mode' => ['nullable', Rule::in([Schedule::WORKLOAD_NONE, Schedule::WORKLOAD_FIXED, Schedule::WORKLOAD_DAILY])],

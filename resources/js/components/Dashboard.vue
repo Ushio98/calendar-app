@@ -34,6 +34,9 @@
         <ul v-else-if="schedules.length" class="schedule-list">
           <li v-for="schedule in schedules" :key="schedule.id" class="schedule-row" :style="{ '--event-color': schedule.color || defaultColor }">
             <div class="schedule-row__main">
+              <p v-if="schedule.project" class="schedule-row__project">
+                <AppIcon name="folder" :size="13" />{{ schedule.project.name }}
+              </p>
               <p class="schedule-row__title">{{ schedule.title }}</p>
               <p class="schedule-row__meta">
                 <AppIcon name="clock" :size="14" />{{ formatPeriod(schedule.start_date, schedule.end_date) }}
