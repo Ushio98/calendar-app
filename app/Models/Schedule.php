@@ -46,14 +46,14 @@ class Schedule extends Model
      *
      * @var array<int, string>
      */
-    protected $appends = ['daily_workloads'];
+    protected $appends = ['daily_workloads', 'actual_workloads'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
-    protected $hidden = ['workloads'];
+    protected $hidden = ['workloads', 'actuals'];
 
     protected $casts = [
         'start_date' => 'date:Y-m-d',
@@ -90,6 +90,32 @@ class Schedule extends Model
 
             return (object) $this->workloads
                 ->mapWithKeys(fn (ScheduleWorkload $workload) => [$workload->date->toDateString() => $workload->value])
+                ->all();
+        });
+    }
+
+    public function actuals(): HasMany
+    {
+        return $this->hasMany(ScheduleActual::class)->orderBy('date');
+    }
+
+    /**
+     * 日ごとの実績を { 'YYYY-MM-DD': 量 } の形で返す。
+     * 期間を短くしても記録は消さず、期間外の分だけ表示しない
+     */
+    protected function actualWorkloads(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->workload_mode === self::WORKLOAD_NONE) {
+                return (object) [];
+            }
+
+            $start = $this->start_date->toDateString();
+            $end = $this->end_date->toDateString();
+
+            return (object) $this->actuals
+                ->filter(fn (ScheduleActual $actual) => $actual->date->toDateString() >= $start && $actual->date->toDateString() <= $end)
+                ->mapWithKeys(fn (ScheduleActual $actual) => [$actual->date->toDateString() => $actual->value])
                 ->all();
         });
     }

@@ -42,6 +42,40 @@ class ProjectApiTest extends TestCase
             ->assertJsonCount(2, '0.schedules');
     }
 
+    public function test_project_listing_includes_plans_and_actuals_for_progress(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+        $project = $user->projects()->create(['name' => '進捗']);
+
+        $fixed = $user->schedules()->create([
+            'project_id' => $project->id,
+            'title' => '毎日同じ',
+            'start_date' => $today,
+            'end_date' => $today,
+            'workload_mode' => 'fixed',
+            'workload_value' => 2000,
+            'workload_unit' => '2',
+        ]);
+        $fixed->actuals()->create(['date' => $today, 'value' => 1500]);
+
+        $daily = $user->schedules()->create([
+            'project_id' => $project->id,
+            'title' => '日ごと',
+            'start_date' => $today,
+            'end_date' => $today,
+            'workload_mode' => 'daily',
+            'workload_unit' => '1',
+        ]);
+        $daily->workloads()->create(['date' => $today, 'value' => 12]);
+
+        $this->actingAs($user)->getJson('/api/projects')
+            ->assertOk()
+            ->assertJsonPath('0.schedules.0.workload_value', 2000)
+            ->assertJsonPath("0.schedules.0.actual_workloads.{$today}", 1500)
+            ->assertJsonPath("0.schedules.1.daily_workloads.{$today}", 12);
+    }
+
     public function test_every_milestone_type_can_be_saved(): void
     {
         $user = User::factory()->create();

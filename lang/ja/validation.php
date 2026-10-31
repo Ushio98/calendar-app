@@ -4,6 +4,7 @@
 // ここにないルールは英語（フレームワーク標準）で表示される
 return [
     'array' => ':attributeの形式が正しくありません。',
+    'before_or_equal' => ':attributeは:date以前の日付にしてください。',
     'after_or_equal' => ':attributeは:date以降の日付にしてください。',
     'boolean' => ':attributeの値が正しくありません。',
     'confirmed' => ':attributeが確認用と一致しません。',

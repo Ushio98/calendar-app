@@ -13,7 +13,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        return $request->user()->projects()->with('schedules.workloads')->orderBy('name')->get();
+        return $request->user()->projects()->with(['schedules.workloads', 'schedules.actuals'])->orderBy('name')->get();
     }
 
     /**
@@ -23,7 +23,7 @@ class ProjectController extends Controller
     {
         $project = $request->user()->projects()->create($this->validated($request));
 
-        return response()->json($project->load('schedules.workloads'), 201);
+        return response()->json($project->load(['schedules.workloads', 'schedules.actuals']), 201);
     }
 
     /**
@@ -33,7 +33,7 @@ class ProjectController extends Controller
     {
         $this->ensureOwner($request, $project);
 
-        return $project->load('schedules.workloads');
+        return $project->load(['schedules.workloads', 'schedules.actuals']);
     }
 
     /**
@@ -45,7 +45,7 @@ class ProjectController extends Controller
 
         $project->update($this->validated($request, $project));
 
-        return $project->load('schedules.workloads');
+        return $project->load(['schedules.workloads', 'schedules.actuals']);
     }
 
     /**

@@ -122,16 +122,54 @@
           <dt><AppIcon name="layers" :size="18" /><span class="visually-hidden">作業量</span></dt>
           <dd>
             {{ workloadSummary(selected) }}
-            <ul v-if="selected.workload_mode === 'daily'" class="workload-breakdown">
-              <li
-                v-for="date in datesBetween(selected.start_date, selected.end_date)"
-                :key="date"
-                :class="{ 'is-today': date === todayYmd, 'is-empty': selected.daily_workloads[date] === undefined }"
-              >
-                <span>{{ formatDateShort(parseYmd(date)) }}</span>
-                <span>{{ selected.daily_workloads[date] === undefined ? '—' : formatWorkload(selected.daily_workloads[date], selected.workload_unit) }}</span>
-              </li>
-            </ul>
+            <div class="progress-table-wrap">
+              <table class="progress-table">
+                <thead>
+                  <tr>
+                    <th scope="col">日付</th>
+                    <th scope="col" class="is-number">予定</th>
+                    <th scope="col" class="is-number">実績</th>
+                    <th scope="col" class="is-number">差</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="date in datesBetween(selected.start_date, selected.end_date)"
+                    :key="date"
+                    :class="{ 'is-today': date === todayYmd }"
+                  >
+                    <th scope="row">{{ formatDateShort(parseYmd(date)) }}</th>
+                    <td class="is-number">{{ plannedOn(selected, date) ?? '—' }}</td>
+                    <td class="is-number">
+                      <ActualInput
+                        v-if="date <= todayYmd"
+                        :schedule-id="selected.id"
+                        :date="date"
+                        :value="actualOn(selected, date)"
+                        :label="`${formatDateShort(parseYmd(date))}の実績`"
+:on-saved="actualSaver(selected, date)"
+                      />
+                      <span v-else class="progress-table__future" title="未来の日付には入力できません">—</span>
+                    </td>
+                    <td class="is-number">
+                      <span
+                        v-if="actualOn(selected, date) !== null"
+                        class="progress-diff"
+                        :class="differenceClass(actualOn(selected, date) - (plannedOn(selected, date) || 0))"
+                      >{{ formatDifference(actualOn(selected, date) - (plannedOn(selected, date) || 0)) }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="progress-summary">
+              実績の合計 <strong>{{ totalActual(selected) }}</strong>{{ formatWorkloadUnit(selected.workload_unit) }}
+              <span
+                v-if="totalDifference(selected) !== null"
+                class="progress-diff"
+                :class="differenceClass(totalDifference(selected))"
+              >入力した日の予定との差 {{ formatDifference(totalDifference(selected)) }}</span>
+            </p>
           </dd>
         </div>
         <div v-if="selected.memo" class="detail-list__row">
@@ -169,6 +207,7 @@
 <script>
 import { Calendar } from 'v-calendar';
 import axios from 'axios';
+import ActualInput from './ActualInput.vue';
 import AppIcon from './ui/AppIcon.vue';
 import BaseModal from './ui/BaseModal.vue';
 import EventForm from './EventForm.vue';
@@ -176,16 +215,23 @@ import { toast } from '../ui/toast';
 import { confirmDialog } from '../ui/confirm';
 import { isMilestonePast, milestoneCountdown, milestoneLabel } from '../ui/project';
 import {
+  actualOn,
   addDays,
   datesBetween,
   DEFAULT_EVENT_COLOR,
+  differenceClass,
   formatDateLong,
   formatDateShort,
+  formatDifference,
   formatPeriod,
   formatWorkload,
+  formatWorkloadUnit,
   parseYmd,
+  plannedOn,
   readableTextColor,
   toYmd,
+  totalActual,
+  totalDifference,
   workloadSummary,
 } from '../ui/schedule';
 
@@ -193,6 +239,7 @@ export default {
   name: 'Events',
   components: {
     VCalendar: Calendar,
+    ActualInput,
     AppIcon,
     BaseModal,
     EventForm,
@@ -296,16 +343,35 @@ export default {
     this.fetchProjects();
   },
   methods: {
+    actualOn,
     datesBetween,
     formatDateLong,
     formatDateShort,
+    formatDifference,
     formatPeriod,
     formatWorkload,
+    formatWorkloadUnit,
     isMilestonePast,
     milestoneCountdown,
     milestoneLabel,
     parseYmd,
+    plannedOn,
+    totalActual,
+    totalDifference,
     workloadSummary,
+    differenceClass,
+    // 保存の完了時には詳細が閉じていることがあるので、対象の予定をここで固定しておく
+    actualSaver(schedule, date) {
+      return value => {
+        const actuals = { ...schedule.actual_workloads };
+        if (value === null) {
+          delete actuals[date];
+        } else {
+          actuals[date] = value;
+        }
+        schedule.actual_workloads = actuals;
+      };
+    },
     chipStyle(color) {
       const background = color || DEFAULT_EVENT_COLOR;
       return { backgroundColor: background, color: readableTextColor(background) };

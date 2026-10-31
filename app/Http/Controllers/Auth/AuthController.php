@@ -48,7 +48,10 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Googleログインだけで登録したユーザーはパスワードを持たないため、照合せずに失敗として扱う
+        $hasPassword = User::where('email', $credentials['email'])->whereNotNull('password')->exists();
+
+        if (! $hasPassword || ! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);

@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/schedules/today', [ScheduleController::class, 'today']);
     Route::put('/schedules/{schedule}/check', [ScheduleController::class, 'check']);
+    Route::put('/schedules/{schedule}/actual', [ScheduleController::class, 'actual']);
     Route::apiResource('schedules', ScheduleController::class);
     Route::apiResource('projects', ProjectController::class);
 });

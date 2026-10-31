@@ -612,17 +612,18 @@ textarea {
 
 .task {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
   background-color: var(--color-bg);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
-.task:hover {
-  background-color: var(--color-surface-muted);
+.task__check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
 }
 
 .task__input {
@@ -667,21 +668,6 @@ textarea {
 .task.is-done .task__title {
   color: var(--color-text-subtle);
   text-decoration: line-through;
-}
-
-.task__workload {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background-color: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.task.is-done .task__workload {
-  background-color: var(--color-success-soft);
-  color: var(--color-success);
 }
 
 /* ==========================================================================
@@ -1011,6 +997,11 @@ textarea {
 .detail-list__row dt {
   padding-top: 2px;
   color: var(--color-text-subtle);
+}
+
+.detail-list__row dd {
+  flex: 1;
+  min-width: 0;
 }
 
 .detail-list__memo {
@@ -1892,42 +1883,6 @@ textarea {
   color: var(--color-text-subtle);
 }
 
-.workload-breakdown {
-  display: flex;
-  flex-direction: column;
-  margin-top: 8px;
-  max-height: 220px;
-  overflow-y: auto;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg);
-  font-size: 13px;
-}
-
-.workload-breakdown li {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 4px 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.workload-breakdown li.is-empty {
-  color: var(--color-text-subtle);
-}
-
-.workload-breakdown li.is-today {
-  background-color: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-weight: 700;
-}
-
-.task__workload small {
-  margin-left: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  opacity: 0.8;
-}
-
 /* ==========================================================================
    プロジェクト
    ========================================================================== */
@@ -2094,3 +2049,292 @@ textarea {
     display: none;
   }
 }
+
+/* ==========================================================================
+   実績の入力
+   ========================================================================== */
+
+.task__progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding-left: 34px;
+  font-size: 13px;
+}
+
+.task__progress-label {
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.task__plan {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.actual-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actual-input__status {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  color: var(--color-success);
+}
+
+.progress-diff {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.progress-diff.is-under {
+  color: var(--color-danger);
+}
+
+.progress-diff.is-over {
+  color: var(--color-success);
+}
+
+.progress-diff.is-even {
+  color: var(--color-text-muted);
+}
+
+.progress-table-wrap {
+  margin-top: 8px;
+  max-height: 280px;
+  overflow: auto;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+}
+
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-table th,
+.progress-table td {
+  padding: 4px 10px;
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.progress-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--color-surface-muted);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.progress-table .is-number {
+  text-align: right;
+}
+
+.progress-table tbody tr.is-today {
+  background-color: var(--color-primary-soft);
+}
+
+.progress-table tbody tr.is-today th {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.progress-table__future {
+  display: inline-block;
+  padding-right: 18px;
+  color: var(--color-text-subtle);
+}
+
+.progress-table .input--compact {
+  width: 76px;
+  min-height: 32px;
+}
+
+.progress-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.progress-summary strong {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .progress-table th,
+  .progress-table td {
+    padding: 4px 6px;
+  }
+
+  .progress-table .input--compact {
+    width: 64px;
+  }
+
+  /* 増減ボタンの領域で数字が隠れないようにする */
+  .actual-input input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .actual-input input::-webkit-inner-spin-button,
+  .actual-input input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* とても狭い画面では、アイコンの列の分も表に使う */
+@media (max-width: 380px) {
+  .progress-table-wrap {
+    margin-left: -30px;
+  }
+
+  .progress-table th,
+  .progress-table td {
+    padding: 4px 3px;
+  }
+
+  .progress-table tbody th {
+    padding-left: 6px;
+  }
+
+  .progress-table .input--compact {
+    width: 58px;
+    padding-inline: 4px;
+  }
+
+  .progress-table .actual-input {
+    gap: 1px;
+  }
+}
+
+/* ==========================================================================
+   プロジェクトの進み具合
+   ========================================================================== */
+
+.project-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-progress .project-card__subtitle {
+  margin-top: 4px;
+}
+
+.project-progress__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-progress__numbers {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.project-progress__numbers strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--color-text);
+}
+
+.project-progress__percent {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.project-progress__bar {
+  position: relative;
+  height: 8px;
+  margin-top: 2px;
+  overflow: visible;
+}
+
+.project-progress__bar .progress__bar {
+  border-radius: 999px;
+}
+
+/* 今日までの予定の位置を示す目印 */
+.project-progress__pace {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background-color: var(--color-text);
+}
+
+.project-progress__pace-text {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.project-schedules__progress {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   ダッシュボードの進行中のプロジェクト
+   ========================================================================== */
+
+.active-projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.active-project {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg);
+}
+
+.active-project__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.active-project .project-progress__bar {
+  background-color: var(--color-border);
+}
+

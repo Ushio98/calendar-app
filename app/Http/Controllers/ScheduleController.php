@@ -15,7 +15,7 @@ class ScheduleController extends Controller
      */
     public function index(Request $request)
     {
-        return $request->user()->schedules()->with('workloads')->orderBy('start_date')->get();
+        return $request->user()->schedules()->with(['workloads', 'actuals'])->orderBy('start_date')->get();
     }
 
     /**
@@ -26,7 +26,7 @@ class ScheduleController extends Controller
         $today = now()->toDateString();
 
         return $request->user()->schedules()
-            ->with(['workloads', 'project:id,name'])
+            ->with(['workloads', 'actuals', 'project:id,name'])
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->withExists(['checks as is_checked' => fn ($query) => $query->whereDate('date', $today)])
@@ -56,6 +56,48 @@ class ScheduleController extends Controller
     }
 
     /**
+     * Record the actual amount of work done on a day. A null value clears the record.
+     */
+    public function actual(Request $request, Schedule $schedule)
+    {
+        $this->ensureOwner($request, $schedule);
+
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.now()->toDateString()],
+            'value' => ['nullable', 'integer', 'min:0', 'max:4294967295'],
+        ], [
+            'date.before_or_equal' => '未来の日付には実績を入力できません。',
+        ], [
+            'date' => '日付',
+            'value' => '実績',
+        ]);
+
+        if ($schedule->workload_mode === Schedule::WORKLOAD_NONE) {
+            throw ValidationException::withMessages(['value' => '作業量が設定されていない予定には実績を入力できません。']);
+        }
+
+        if ($data['date'] < $schedule->start_date->toDateString() || $data['date'] > $schedule->end_date->toDateString()) {
+            throw ValidationException::withMessages(['date' => '予定の期間外の日付には実績を入力できません。']);
+        }
+
+        $value = $data['value'] ?? null;
+
+        if ($value === null) {
+            $schedule->actuals()->whereDate('date', $data['date'])->delete();
+        } else {
+            $actual = $schedule->actuals()->whereDate('date', $data['date'])->first();
+
+            if ($actual) {
+                $actual->update(['value' => $value]);
+            } else {
+                $schedule->actuals()->create(['date' => $data['date'], 'value' => $value]);
+            }
+        }
+
+        return response()->json(['id' => $schedule->id, 'date' => $data['date'], 'value' => $value]);
+    }
+
+    /**
      * Store a newly created schedule.
      */
     public function store(Request $request)
@@ -69,7 +111,7 @@ class ScheduleController extends Controller
             return $schedule;
         });
 
-        return response()->json($schedule->load('workloads'), 201);
+        return response()->json($schedule->load(['workloads', 'actuals']), 201);
     }
 
     /**
@@ -79,7 +121,7 @@ class ScheduleController extends Controller
     {
         $this->ensureOwner($request, $schedule);
 
-        return $schedule->load('workloads');
+        return $schedule->load(['workloads', 'actuals']);
     }
 
     /**
@@ -96,7 +138,7 @@ class ScheduleController extends Controller
             $this->syncDailyWorkloads($schedule, $dailyWorkloads);
         });
 
-        return $schedule->load('workloads');
+        return $schedule->load(['workloads', 'actuals']);
     }
 
     /**
