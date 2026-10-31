@@ -59,8 +59,8 @@
 
         <p v-if="loading" class="card__placeholder">読み込み中…</p>
         <ul v-else-if="tasks.length" class="task-list">
-          <li v-for="task in tasks" :key="task.id">
-            <label class="task" :class="{ 'is-done': task.is_checked }">
+          <li v-for="task in tasks" :key="task.id" class="task" :class="{ 'is-done': task.is_checked }">
+            <label class="task__check">
               <input
                 type="checkbox"
                 class="task__input"
@@ -70,11 +70,23 @@
               />
               <span class="task__box"><AppIcon name="check" :size="14" /></span>
               <span class="task__title">{{ task.title }}</span>
-              <span class="task__workload">
-                {{ formatWorkload(task.today_workload, task.workload_unit) }}
-                <small v-if="task.workload_mode === 'daily'">今日の分</small>
-              </span>
             </label>
+            <div class="task__progress">
+              <span class="task__progress-label">実績</span>
+              <ActualInput
+                :schedule-id="task.id"
+                :date="todayYmd"
+                :value="actualOn(task, todayYmd)"
+                :label="`${task.title}の今日の実績`"
+:on-saved="value => setActual(task, value)"
+              />
+              <span class="task__plan">/ {{ formatWorkload(task.today_workload, task.workload_unit) }}</span>
+              <span
+                v-if="actualOn(task, todayYmd) !== null"
+                class="progress-diff"
+                :class="differenceClass(actualOn(task, todayYmd) - task.today_workload)"
+              >{{ formatDifference(actualOn(task, todayYmd) - task.today_workload) }}</span>
+            </div>
           </li>
         </ul>
         <div v-else class="empty-state">
@@ -83,27 +95,76 @@
         </div>
       </div>
     </div>
+
+    <div class="card">
+      <header class="card__header">
+        <h3 class="card__title"><AppIcon name="folder" :size="20" />進行中のプロジェクト</h3>
+        <router-link to="/projects" class="text-link text-link--small">すべて見る</router-link>
+      </header>
+
+      <p v-if="projectsLoading" class="card__placeholder">読み込み中…</p>
+      <div v-else-if="activeProjects.length" class="active-projects">
+        <article v-for="project in activeProjects" :key="project.id" class="active-project">
+          <h4 class="active-project__name">{{ project.name }}</h4>
+          <p
+            v-if="project.milestone_date"
+            class="project-milestone"
+            :class="{ 'is-past': isMilestonePast(project.milestone_date) }"
+          >
+            <AppIcon name="flag" :size="16" />
+            <span class="project-milestone__type">{{ milestoneLabel(project.milestone_type) }}</span>
+            <span>{{ formatDateShort(parseYmd(project.milestone_date)) }}</span>
+            <span class="project-milestone__countdown">{{ milestoneCountdown(project.milestone_date) }}</span>
+          </p>
+          <ProjectProgress :project="project" />
+        </article>
+      </div>
+      <div v-else class="empty-state">
+        <p>進行中のプロジェクトはありません。</p>
+        <p class="empty-state__hint">プロジェクトに予定を入れると、期間中はここに表示されます。</p>
+      </div>
+    </div>
   </section>
 </template>
 
 <script>
+import ActualInput from './ActualInput.vue';
+import ProjectProgress from './ProjectProgress.vue';
 import AppIcon from './ui/AppIcon.vue';
 import { toast } from '../ui/toast';
 import { authState } from '../ui/auth';
-import { DEFAULT_EVENT_COLOR, formatDateLong, formatPeriod, formatWorkload } from '../ui/schedule';
+import { activeProjects, isMilestonePast, milestoneCountdown, milestoneLabel } from '../ui/project';
+import {
+  actualOn,
+  DEFAULT_EVENT_COLOR,
+  differenceClass,
+  formatDateLong,
+  formatDateShort,
+  formatDifference,
+  formatPeriod,
+  formatWorkload,
+  parseYmd,
+  toYmd,
+} from '../ui/schedule';
 
 export default {
   name: 'Dashboard',
-  components: { AppIcon },
+  components: { ActualInput, AppIcon, ProjectProgress },
   data() {
     return {
       schedules: [],
+      projects: [],
+      projectsLoading: true,
       loading: true,
       pending: {},
       defaultColor: DEFAULT_EVENT_COLOR,
+      todayYmd: toYmd(new Date()),
     };
   },
   computed: {
+    activeProjects() {
+      return activeProjects(this.projects);
+    },
     todayLabel() {
       return formatDateLong(new Date());
     },
@@ -127,10 +188,46 @@ export default {
   },
   mounted() {
     this.fetchTodaySchedules();
+    this.fetchProjects();
   },
   methods: {
+    actualOn,
+    formatDateShort,
+    formatDifference,
     formatPeriod,
+    isMilestonePast,
+    milestoneCountdown,
+    milestoneLabel,
+    parseYmd,
     formatWorkload,
+    differenceClass,
+    setActual(task, value) {
+      const actuals = { ...task.actual_workloads };
+      if (value === null) {
+        delete actuals[this.todayYmd];
+      } else {
+        actuals[this.todayYmd] = value;
+      }
+      task.actual_workloads = actuals;
+
+      // 同じ予定はプロジェクト側にも別のデータとしてあるので、進み具合にもすぐ反映する
+      const inProject = this.projects
+        .flatMap(project => project.schedules)
+        .find(schedule => schedule.id === task.id);
+      if (inProject) inProject.actual_workloads = actuals;
+    },
+    async fetchProjects() {
+      this.projectsLoading = true;
+      try {
+        const response = await window.axios.get('/api/projects');
+        this.projects = response.data;
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        toast('進行中のプロジェクトの読み込みに失敗しました。', 'error');
+      } finally {
+        this.projectsLoading = false;
+      }
+    },
     async fetchTodaySchedules() {
       this.loading = true;
       try {

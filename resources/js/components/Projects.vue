@@ -34,11 +34,16 @@
         </p>
         <p v-else class="project-milestone project-milestone--empty">日付は設定されていません</p>
 
+        <ProjectProgress v-if="project.schedules.length" :project="project" />
+
         <h4 class="project-card__subtitle">予定 {{ project.schedules.length }}件</h4>
         <ul v-if="project.schedules.length" class="project-schedules">
           <li v-for="schedule in project.schedules" :key="schedule.id" :style="{ '--event-color': schedule.color || defaultColor }">
             <span class="project-schedules__title">{{ schedule.title }}</span>
             <span class="project-schedules__period">{{ formatPeriod(schedule.start_date, schedule.end_date) }}</span>
+            <span v-if="schedule.workload_mode !== 'none'" class="project-schedules__progress">
+              実績 {{ totalActual(schedule) }} / {{ totalWorkload(schedule) }}{{ formatWorkloadUnit(schedule.workload_unit) }}
+            </span>
           </li>
         </ul>
         <p v-else class="project-card__empty">カレンダーで予定を追加するときに、このプロジェクトを選べます。</p>
@@ -60,14 +65,23 @@
 import axios from 'axios';
 import AppIcon from './ui/AppIcon.vue';
 import ProjectFormModal from './ProjectFormModal.vue';
+import ProjectProgress from './ProjectProgress.vue';
 import { confirmDialog } from '../ui/confirm';
 import { toast } from '../ui/toast';
 import { isMilestonePast, milestoneCountdown, milestoneLabel } from '../ui/project';
-import { DEFAULT_EVENT_COLOR, formatDateLong, formatPeriod, parseYmd } from '../ui/schedule';
+import {
+  DEFAULT_EVENT_COLOR,
+  formatDateLong,
+  formatPeriod,
+  formatWorkloadUnit,
+  parseYmd,
+  totalActual,
+  totalWorkload,
+} from '../ui/schedule';
 
 export default {
   name: 'Projects',
-  components: { AppIcon, ProjectFormModal },
+  components: { AppIcon, ProjectFormModal, ProjectProgress },
   data() {
     return {
       projects: [],
@@ -87,6 +101,9 @@ export default {
     milestoneCountdown,
     milestoneLabel,
     parseYmd,
+    formatWorkloadUnit,
+    totalActual,
+    totalWorkload,
     async fetchProjects() {
       this.loading = true;
       try {

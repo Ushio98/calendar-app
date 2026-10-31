@@ -129,3 +129,45 @@ export function workloadSummary(schedule) {
   }
   return '';
 }
+
+// 指定した日の予定の作業量。作業量がない日は null
+export function plannedOn(schedule, date) {
+  if (schedule.workload_mode === 'fixed') return schedule.workload_value;
+  if (schedule.workload_mode === 'daily') {
+    const value = (schedule.daily_workloads || {})[date];
+    return value === undefined ? null : value;
+  }
+  return null;
+}
+
+// 指定した日の実績。未入力なら null
+export function actualOn(schedule, date) {
+  const value = (schedule.actual_workloads || {})[date];
+  return value === undefined ? null : value;
+}
+
+// 実績の合計
+export function totalActual(schedule) {
+  return Object.values(schedule.actual_workloads || {}).reduce((sum, value) => sum + value, 0);
+}
+
+// 実績を入れた日の、予定との差の合計。実績が1日もなければ null
+export function totalDifference(schedule) {
+  const dates = Object.keys(schedule.actual_workloads || {});
+  if (!dates.length) return null;
+  return dates.reduce((sum, date) => sum + actualOn(schedule, date) - (plannedOn(schedule, date) || 0), 0);
+}
+
+// 予定との差の表示。+100 / −500 / ±0
+export function formatDifference(difference) {
+  if (difference === null || difference === undefined) return '';
+  if (difference === 0) return '±0';
+  return difference > 0 ? `+${difference}` : `−${-difference}`;
+}
+
+// 予定との差の色分けに使うクラス
+export function differenceClass(difference) {
+  if (difference < 0) return 'is-under';
+  return difference > 0 ? 'is-over' : 'is-even';
+}
+

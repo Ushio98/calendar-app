@@ -179,6 +179,114 @@ class ScheduleApiTest extends TestCase
             ->assertJsonPath('workload_mode', 'none');
     }
 
+    public function test_actual_progress_is_recorded_per_day_and_can_differ_from_the_plan(): void
+    {
+        $user = User::factory()->create();
+        $yesterday = now()->subDay()->toDateString();
+        $today = now()->toDateString();
+
+        $schedule = $user->schedules()->create([
+            'title' => '執筆',
+            'start_date' => $yesterday,
+            'end_date' => $today,
+            'workload_mode' => 'fixed',
+            'workload_value' => 2000,
+        ]);
+
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => $yesterday, 'value' => 1500])
+            ->assertOk()
+            ->assertJsonPath('value', 1500);
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => $today, 'value' => 0])->assertOk();
+
+        // 同じ日にもう一度入れると上書きされる
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => $yesterday, 'value' => 1800])->assertOk();
+
+        $this->actingAs($user)->getJson('/api/schedules')
+            ->assertOk()
+            ->assertJsonPath('0.workload_value', 2000)
+            ->assertJsonPath("0.actual_workloads.{$yesterday}", 1800)
+            ->assertJsonPath("0.actual_workloads.{$today}", 0);
+
+        // 空にすると記録が消える
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => $yesterday, 'value' => null])->assertOk();
+        $this->assertDatabaseCount('schedule_actuals', 1);
+    }
+
+    public function test_actual_progress_is_only_accepted_on_valid_days(): void
+    {
+        $user = User::factory()->create();
+        $tomorrow = now()->addDay()->toDateString();
+
+        $schedule = $user->schedules()->create([
+            'title' => '執筆',
+            'start_date' => now()->toDateString(),
+            'end_date' => $tomorrow,
+            'workload_mode' => 'fixed',
+            'workload_value' => 10,
+        ]);
+
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => $tomorrow, 'value' => 1])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.date.0', '未来の日付には実績を入力できません。');
+
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => now()->subDay()->toDateString(), 'value' => 1])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.date.0', '予定の期間外の日付には実績を入力できません。');
+
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => now()->toDateString(), 'value' => -1])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('value');
+
+        $noWorkload = $user->schedules()->create([
+            'title' => '会議',
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->toDateString(),
+        ]);
+
+        $this->actingAs($user)->putJson("/api/schedules/{$noWorkload->id}/actual", ['date' => now()->toDateString(), 'value' => 1])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('value');
+    }
+
+    public function test_other_users_cannot_record_actual_progress(): void
+    {
+        $alice = User::factory()->create();
+        $bob = User::factory()->create();
+        $schedule = $alice->schedules()->create([
+            'title' => '執筆',
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->toDateString(),
+            'workload_mode' => 'fixed',
+            'workload_value' => 10,
+        ]);
+
+        $this->actingAs($bob)->putJson("/api/schedules/{$schedule->id}/actual", ['date' => now()->toDateString(), 'value' => 1])
+            ->assertNotFound();
+    }
+
+    public function test_shortening_the_period_hides_actuals_without_deleting_them(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+        $yesterday = now()->subDay()->toDateString();
+
+        $schedule = $user->schedules()->create([
+            'title' => '執筆',
+            'start_date' => $yesterday,
+            'end_date' => $today,
+            'workload_mode' => 'fixed',
+            'workload_value' => 10,
+        ]);
+        $schedule->actuals()->create(['date' => $yesterday, 'value' => 7]);
+
+        $this->actingAs($user)
+            ->putJson("/api/schedules/{$schedule->id}", ['title' => '執筆', 'start_date' => $today, 'end_date' => $today])
+            ->assertOk()
+            ->assertJsonPath('actual_workloads', []);
+
+        $this->assertDatabaseCount('schedule_actuals', 1);
+    }
+
     public function test_created_schedules_belong_to_the_current_user(): void
     {
         $user = User::factory()->create();
