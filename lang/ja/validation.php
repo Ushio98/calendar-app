@@ -51,6 +51,7 @@ return [
         'location' => '場所',
         'checked' => 'チェック状態',
         'project_id' => 'プロジェクト',
+        'show_in_tasks' => '「本日の作業」への表示',
         'workload_mode' => '作業量の設定方法',
         'daily_workloads' => '日ごとの作業量',
         'daily_workloads.*.date' => '作業日',

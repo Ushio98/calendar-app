@@ -33,7 +33,8 @@ class ScheduleController extends Controller
             ->orderBy('start_date')
             ->get()
             // 今日の作業量（「毎日同じ」ならその量、「日ごとに設定」なら今日の分）
-            ->each(fn (Schedule $schedule) => $schedule->setAttribute('today_workload', $schedule->workloadOn($today)));
+            ->each(fn (Schedule $schedule) => $schedule->setAttribute('today_workload', $schedule->workloadOn($today))
+                ->setAttribute('is_today_task', $schedule->isTaskOn($today)));
     }
 
     /**
@@ -177,6 +178,7 @@ class ScheduleController extends Controller
             'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')->where('user_id', $request->user()->id)],
             'color' => ['nullable', 'string', 'max:20'],
             'memo' => ['nullable', 'string'],
+            'show_in_tasks' => ['boolean'],
             'workload_mode' => ['nullable', Rule::in([Schedule::WORKLOAD_NONE, Schedule::WORKLOAD_FIXED, Schedule::WORKLOAD_DAILY])],
             'workload_value' => ['nullable', 'integer', 'min:0'],
             'workload_unit' => ['nullable', 'string', 'max:50'],
@@ -207,6 +209,12 @@ class ScheduleController extends Controller
         }
 
         $data['workload_mode'] = $mode;
+
+        // 指定がない新しい予定は、作業量があれば「本日の作業」に出す
+        if ($schedule === null && ! array_key_exists('show_in_tasks', $data)) {
+            $data['show_in_tasks'] = $mode !== Schedule::WORKLOAD_NONE;
+        }
+
         $dailyWorkloads = [];
 
         if ($mode === Schedule::WORKLOAD_NONE) {

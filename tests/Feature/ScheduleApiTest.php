@@ -287,6 +287,79 @@ class ScheduleApiTest extends TestCase
         $this->assertDatabaseCount('schedule_actuals', 1);
     }
 
+    public function test_tasks_can_be_chosen_regardless_of_workload(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+        $make = fn (array $body) => $this->actingAs($user)
+            ->postJson('/api/schedules', ['start_date' => $today, 'end_date' => $today, ...$body])
+            ->assertCreated();
+
+        // 作業量なしでも選べる
+        $make(['title' => 'なし・オン', 'workload_mode' => 'none', 'show_in_tasks' => true])
+            ->assertJsonPath('show_in_tasks', true);
+        // 作業量ありでも外せる
+        $make(['title' => 'あり・オフ', 'workload_mode' => 'fixed', 'workload_value' => 5, 'show_in_tasks' => false]);
+        // 指定がなければ作業量の有無に従う
+        $make(['title' => 'あり・指定なし', 'workload_mode' => 'fixed', 'workload_value' => 5])
+            ->assertJsonPath('show_in_tasks', true);
+        $make(['title' => 'なし・指定なし'])->assertJsonPath('show_in_tasks', false);
+        // 日ごとの設定で今日が空欄なら、オンでも今日は出さない
+        $make([
+            'title' => '日ごと・今日は空欄',
+            'end_date' => now()->addDay()->toDateString(),
+            'workload_mode' => 'daily',
+            'daily_workloads' => [['date' => now()->addDay()->toDateString(), 'value' => 3]],
+            'show_in_tasks' => true,
+        ]);
+
+        $tasks = collect($this->actingAs($user)->getJson('/api/schedules/today')->assertOk()->json())
+            ->filter(fn (array $schedule) => $schedule['is_today_task'])
+            ->pluck('title')
+            ->sort()
+            ->values()
+            ->all();
+
+        $this->assertSame(collect(['なし・オン', 'あり・指定なし'])->sort()->values()->all(), $tasks);
+    }
+
+    public function test_updating_without_show_in_tasks_keeps_the_choice(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+        $schedule = $user->schedules()->create([
+            'title' => '会議',
+            'start_date' => $today,
+            'end_date' => $today,
+            'show_in_tasks' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->putJson("/api/schedules/{$schedule->id}", ['title' => '定例会議', 'start_date' => $today, 'end_date' => $today])
+            ->assertOk()
+            ->assertJsonPath('show_in_tasks', true);
+    }
+
+    public function test_tasks_without_a_workload_can_be_checked_off(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+        $schedule = $user->schedules()->create([
+            'title' => '会議',
+            'start_date' => $today,
+            'end_date' => $today,
+            'show_in_tasks' => true,
+        ]);
+
+        $this->actingAs($user)->putJson("/api/schedules/{$schedule->id}/check", ['checked' => true])->assertOk();
+
+        $this->actingAs($user)->getJson('/api/schedules/today')
+            ->assertOk()
+            ->assertJsonPath('0.is_today_task', true)
+            ->assertJsonPath('0.is_checked', true)
+            ->assertJsonPath('0.today_workload', null);
+    }
+
     public function test_created_schedules_belong_to_the_current_user(): void
     {
         $user = User::factory()->create();
