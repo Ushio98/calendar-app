@@ -124,7 +124,7 @@
         </div>
         <p v-if="errorFor('workload_value')" class="field__error">{{ errorFor('workload_value') }}</p>
         <p v-else class="field__hint">
-          期間中の毎日、同じ作業量が「本日の作業」に表示されます。
+          期間中の毎日、同じ作業量になります。
           <template v-if="periodDates.length > 1 && isFilled(form.workloadValue)">
             （{{ periodDates.length }}日間で合計 {{ form.workloadValue * periodDates.length }}{{ unitLabel }}）
           </template>
@@ -183,11 +183,17 @@
             <span>合計 <strong>{{ dailyTotal }}</strong>{{ unitLabel }}</span>
             <span class="daily-total__days">{{ filledDates.length }} / {{ periodDates.length }}日に入力</span>
           </p>
-          <p class="field__hint">空欄の日は作業なしとして扱い、「本日の作業」にも表示されません。</p>
+          <p class="field__hint">空欄の日は作業なしとして扱います。</p>
         </template>
       </template>
+    </div>
 
-      <p v-else class="field__hint">作業量を入れると、ダッシュボードの「本日の作業」に表示されます。</p>
+    <div class="field">
+      <label class="checkbox">
+        <input v-model="form.showInTasks" type="checkbox" @change="showInTasksTouched = true" />
+        <span>ダッシュボードの「本日の作業」に表示する</span>
+      </label>
+      <p class="field__hint">{{ showInTasksHint }}</p>
     </div>
 
     <div class="field">
@@ -256,6 +262,10 @@ export default {
       clientErrors: {},
       bulkValue: null,
       projectFormOpen: false,
+      // 作業量の設定に合わせて自動で切り替えるのは、手動で変更していない間だけ
+      showInTasksTouched: false,
+      showInTasksAuto: false,
+      previousMode: null,
       form: {
         title: '',
         projectId: null,
@@ -269,8 +279,12 @@ export default {
         workloadMode: this.initial.workloadMode
           || (this.isFilled(this.initial.workloadValue) ? 'fixed' : 'none'),
         dailyValues: { ...(this.initial.dailyValues || {}) },
+        showInTasks: !!this.initial.showInTasks,
       },
     };
+  },
+  created() {
+    this.previousMode = this.form.workloadMode;
   },
   computed: {
     periodDates() {
@@ -282,6 +296,12 @@ export default {
     },
     dailyTotal() {
       return this.filledDates.reduce((sum, date) => sum + Number(this.form.dailyValues[date]), 0);
+    },
+    showInTasksHint() {
+      if (!this.form.showInTasks) return 'オフの場合、カレンダーにだけ表示されます。';
+      if (this.form.workloadMode === 'daily') return '作業量を入れた日に、完了チェックと実績の入力欄が表示されます。';
+      if (this.form.workloadMode === 'fixed') return '期間中の毎日、完了チェックと実績の入力欄が表示されます。';
+      return '期間中の毎日、完了チェックが表示されます。';
     },
     unitLabel() {
       return formatWorkloadUnit(this.form.workloadUnit);
@@ -302,7 +322,24 @@ export default {
     formatDay(date) {
       return formatDateShort(parseYmd(date));
     },
+    syncShowInTasks() {
+      const mode = this.form.workloadMode;
+      const previous = this.previousMode;
+      this.previousMode = mode;
+      if (this.showInTasksTouched) return;
+
+      if (previous === 'none' && mode !== 'none') {
+        if (!this.form.showInTasks) {
+          this.form.showInTasks = true;
+          this.showInTasksAuto = true;
+        }
+      } else if (mode === 'none' && this.showInTasksAuto) {
+        this.form.showInTasks = false;
+        this.showInTasksAuto = false;
+      }
+    },
     onModeChange() {
+      this.syncShowInTasks();
       // 「毎日同じ」から切り替えたときは、その量を各日の初期値にする
       if (this.form.workloadMode === 'daily' && this.isFilled(this.form.workloadValue) && this.filledDates.length === 0) {
         this.periodDates.forEach(date => {
@@ -360,6 +397,7 @@ export default {
         color: this.form.color,
         memo: this.form.memo || null,
         workload_mode: mode,
+        show_in_tasks: this.form.showInTasks,
         workload_value: mode === 'fixed' ? this.form.workloadValue : null,
         workload_unit: mode === 'none' ? null : this.form.workloadUnit || null,
         // 期間外の日や空欄の日は送らない

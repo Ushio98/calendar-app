@@ -172,6 +172,10 @@
             </p>
           </dd>
         </div>
+        <div v-if="selected.show_in_tasks" class="detail-list__row">
+          <dt><AppIcon name="check" :size="18" /><span class="visually-hidden">本日の作業</span></dt>
+          <dd>「本日の作業」に表示します</dd>
+        </div>
         <div v-if="selected.memo" class="detail-list__row">
           <dt><AppIcon name="note" :size="18" /><span class="visually-hidden">メモ</span></dt>
           <dd class="detail-list__memo">{{ selected.memo }}</dd>
@@ -426,6 +430,7 @@ export default {
         color: schedule.color || DEFAULT_EVENT_COLOR,
         projectId: schedule.project_id,
         workloadMode: schedule.workload_mode || 'none',
+        showInTasks: schedule.show_in_tasks,
         workloadValue: schedule.workload_value,
         workloadUnit: schedule.workload_unit || '',
         dailyValues: { ...(schedule.daily_workloads || {}) },

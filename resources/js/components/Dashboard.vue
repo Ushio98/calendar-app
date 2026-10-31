@@ -71,7 +71,7 @@
               <span class="task__box"><AppIcon name="check" :size="14" /></span>
               <span class="task__title">{{ task.title }}</span>
             </label>
-            <div class="task__progress">
+            <div v-if="task.today_workload !== null" class="task__progress">
               <span class="task__progress-label">実績</span>
               <ActualInput
                 :schedule-id="task.id"
@@ -91,7 +91,7 @@
         </ul>
         <div v-else class="empty-state">
           <p>本日の作業はありません。</p>
-          <p class="empty-state__hint">予定に「作業量」を入れると、ここに表示されます。</p>
+          <p class="empty-state__hint">予定の「本日の作業に表示する」をオンにすると、ここに表示されます。</p>
         </div>
       </div>
     </div>
@@ -176,8 +176,7 @@ export default {
       return authState.user ? `${greeting}、${authState.user.name}さん` : greeting;
     },
     tasks() {
-      // 「日ごとに設定」で今日の作業量が空欄の予定は、今日は作業なし
-      return this.schedules.filter(s => s.today_workload !== null && s.today_workload !== undefined);
+      return this.schedules.filter(s => s.is_today_task);
     },
     doneCount() {
       return this.tasks.filter(t => t.is_checked).length;

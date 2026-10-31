@@ -26,6 +26,7 @@ class Schedule extends Model
         'workload_value',
         'workload_unit',
         'workload_mode',
+        'show_in_tasks',
         'start_date',
         'end_date',
         'all_day',
@@ -59,6 +60,7 @@ class Schedule extends Model
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
         'all_day' => 'boolean',
+        'show_in_tasks' => 'boolean',
         'workload_value' => 'integer',
         'is_checked' => 'boolean',
     ];
@@ -130,6 +132,19 @@ class Schedule extends Model
             self::WORKLOAD_DAILY => $this->workloads->first(fn (ScheduleWorkload $workload) => $workload->date->toDateString() === $date)?->value,
             default => null,
         };
+    }
+
+    /**
+     * 指定した日の「本日の作業」に出すかどうか。
+     * 「日ごとに設定」で作業量が空欄の日は作業なしとして扱う
+     */
+    public function isTaskOn(string $date): bool
+    {
+        if (! $this->show_in_tasks) {
+            return false;
+        }
+
+        return $this->workload_mode !== self::WORKLOAD_DAILY || $this->workloadOn($date) !== null;
     }
 
     public function checks(): HasMany
